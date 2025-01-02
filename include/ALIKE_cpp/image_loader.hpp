@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <opencv2/opencv.hpp>
 
-#include <utils.h>
+#include "utils.hpp"
 
 namespace alike
 {

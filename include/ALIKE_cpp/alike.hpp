@@ -38,9 +38,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <torch/script.h>
 #include <opencv2/opencv.hpp>
 
-#include <simple_padder.hpp>
-#include <soft_detect.hpp>
-#include <utils.h>
+#include "simple_padder.hpp"
+#include "soft_detect.hpp"
+#include "utils.hpp"
 
 namespace alike
 {

@@ -30,9 +30,11 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
+
 #include <omp.h>
 #include <torch/torch.h>
-#include <get_patches.h>
+#include "ALIKE_cpp/get_patches_cuda.h"
 
 // map: CxHxW
 // points: Nx2
@@ -41,8 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // torch implementation: too slow!!
 torch::Tensor get_patches_torch(const torch::Tensor &map,
                                 torch::Tensor &points,
-                                int radius)
-{
+                                int radius) {
     namespace F = torch::nn::functional;
     using namespace torch::indexing;
 
@@ -60,8 +61,7 @@ torch::Tensor get_patches_torch(const torch::Tensor &map,
     // float *p_map = map_pad.accessor<float, 3>().data();     // Cx(H+2*radius)x(W+2*radius)
     // float *p_patches = patches.accessor<float, 4>().data(); // NxCx(2*radius+1)x(2*radius+1)
     // too slow!!!
-    for (auto i = 0; i < N; i++)
-    {
+    for (auto i = 0; i < N; i++) {
         auto w_start = points.index({i, 0}).item().toLong();
         auto h_start = points.index({i, 1}).item().toLong();
         torch::Tensor patch = map_pad.index({Slice(),
@@ -80,8 +80,7 @@ torch::Tensor get_patches_torch(const torch::Tensor &map,
 // return: NxCx(2*radius+1)x(2*radius+1)
 torch::Tensor get_patches_cpu(const torch::Tensor &map,
                               torch::Tensor &points,
-                              int radius)
-{
+                              int radius) {
     namespace F = torch::nn::functional;
     using namespace torch::indexing;
 
@@ -107,18 +106,14 @@ torch::Tensor get_patches_cpu(const torch::Tensor &map,
     float *p_patches = patches.accessor<float, 4>().data(); // NxCxkernel_sizexkernel_size
 
 #pragma omp parallel for
-    for (auto in = 0; in < N; in++)
-    {
+    for (auto in = 0; in < N; in++) {
         long w_start = static_cast<long>(*(p_points + in * 2 + 0));
         long h_start = static_cast<long>(*(p_points + in * 2 + 1));
 
         // copy data
-        for (auto ic = 0; ic < C; ic++)
-        {
-            for (auto ih = 0; ih < kernel_size; ih++)
-            {
-                for (auto iw = 0; iw < kernel_size; iw++)
-                {
+        for (auto ic = 0; ic < C; ic++) {
+            for (auto ih = 0; ih < kernel_size; ih++) {
+                for (auto iw = 0; iw < kernel_size; iw++) {
                     // Cx(H+2*radius)x(W+2*radius)
                     float *p_src = p_map +
                                    ic * (H + 2 * radius) * (W + 2 * radius) +
@@ -140,8 +135,7 @@ torch::Tensor get_patches_cpu(const torch::Tensor &map,
 
 torch::Tensor get_patches(const torch::Tensor &map,
                           torch::Tensor &points,
-                          int radius)
-{
+                          int radius) {
     if (map.device() == torch::kCPU)
         return get_patches_cpu(map, points, radius);
     else

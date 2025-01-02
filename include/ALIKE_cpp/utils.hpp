@@ -30,40 +30,36 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef UTILS_H
+#define UTILS_H
+
+#include <torch/torch.h>
+#include <opencv2/opencv.hpp>
 #include <string>
 #include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <torch/torch.h>
-#include <opencv2/opencv.hpp>
 
-namespace alike
-{
-    bool startsWith(std::string s, std::string sub)
-    {
+
+namespace alike {
+    bool startsWith(std::string s, std::string sub) {
         return s.find(sub) == 0 ? true : false;
     }
 
-    bool endsWith(std::string s, std::string sub)
-    {
-        if (s.rfind(sub) == -1)
-        {
+    bool endsWith(std::string s, std::string sub) {
+        if (s.rfind(sub) == -1) {
             return false;
-        }
-        else
-        {
+        } else {
             return s.rfind(sub) == (s.length() - sub.length()) ? true : false;
         }
     }
 
-    torch::Tensor mat2Tensor(cv::Mat &image)
-    {
+    torch::Tensor mat2Tensor(cv::Mat &image) {
         return torch::from_blob(image.data, {image.rows, image.cols, image.channels()}, torch::kByte);
     }
 
-    cv::Mat tensor2Mat(torch::Tensor &tensor)
-    {
+    cv::Mat tensor2Mat(torch::Tensor &tensor) {
         // only supports one dimensional float32.
         tensor = tensor.squeeze().detach(); // HW
         tensor = tensor.contiguous();       // HW -> HW
@@ -74,8 +70,7 @@ namespace alike
         return mat.clone();
     }
 
-    cv::Mat applyJet(cv::Mat &scoremap)
-    {
+    cv::Mat applyJet(cv::Mat &scoremap) {
         // scoremap: 0~1, CV_32FC1
         cv::Mat scoremap_u8, scoremap_jet;
 
@@ -85,39 +80,34 @@ namespace alike
         return scoremap_jet;
     }
 
-    int isFileExist(std::string path)
-    {
+    int isFileExist(std::string path) {
         return !access(path.c_str(), F_OK);
-    }    
+    }
 
-    bool isFile(std::string filename)
-    {
+    bool isFile(std::string filename) {
         struct stat buffer;
         return (stat(filename.c_str(), &buffer) == 0 && S_ISREG(buffer.st_mode));
     }
 
-    bool isDir(std::string filefodler)
-    {
+    bool isDir(std::string filefodler) {
         struct stat buffer;
         return (stat(filefodler.c_str(), &buffer) == 0 && S_ISDIR(buffer.st_mode));
     }
 
-    void getFileNames(std::string path, std::vector<std::string> &filenames)
-    {
+    void getFileNames(std::string path, std::vector <std::string> &filenames) {
         DIR *pDir;
         struct dirent *ptr;
-        if (!(pDir = opendir(path.c_str())))
-        {
+        if (!(pDir = opendir(path.c_str()))) {
             std::cout << "Folder doesn't Exist!" << std::endl;
             return;
         }
-        while ((ptr = readdir(pDir)) != 0)
-        {
-            if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0)
-            {
+        while ((ptr = readdir(pDir)) != 0) {
+            if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0) {
                 filenames.push_back(path + "/" + ptr->d_name);
             }
         }
         closedir(pDir);
-    }    
+    }
 }
+
+#endif

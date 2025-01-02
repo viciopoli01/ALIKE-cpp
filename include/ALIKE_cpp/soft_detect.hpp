@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
-#include <get_patches.h>
+#include "get_patches.hpp"
 #include <torch/torch.h>
 
 namespace alike

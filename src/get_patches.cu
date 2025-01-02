@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cuda_runtime.h>
 #include <torch/torch.h>
 #include <stdio.h>
+#include "ALIKE_cpp/get_patches_cuda.h"
 
 namespace F = torch::nn::functional;
 
@@ -46,30 +47,25 @@ namespace F = torch::nn::functional;
 
 const int blockSize = 256;
 
-template <typename scalar_t>
+template<typename scalar_t>
 __global__ void get_patches_cuda_kernel(
-    const torch::PackedTensorAccessor32<scalar_t, 3, torch::RestrictPtrTraits> map_pad, // Cx(H+2*radius)x(W+2*radius)
-    const torch::PackedTensorAccessor32<int64_t, 2, torch::RestrictPtrTraits> points,   // Nx2
-    torch::PackedTensorAccessor32<scalar_t, 4, torch::RestrictPtrTraits> patches,       // NxCxkernel_sizexkernel_size
-    int radius)
-{
+        const torch::PackedTensorAccessor32<scalar_t, 3, torch::RestrictPtrTraits> map_pad, // Cx(H+2*radius)x(W+2*radius)
+        const torch::PackedTensorAccessor32<int64_t, 2, torch::RestrictPtrTraits> points,   // Nx2
+        torch::PackedTensorAccessor32<scalar_t, 4, torch::RestrictPtrTraits> patches,       // NxCxkernel_sizexkernel_size
+        int radius) {
     const int in = blockIdx.x * blockDim.x + threadIdx.x;
     const int N = points.size(0);
     const int C = map_pad.size(0);
     const int kernel_size = 2 * radius + 1;
 
-    if (in < N)
-    {
+    if (in < N) {
         long w_start = points[in][0];
         long h_start = points[in][1];
 
         // copy data
-        for (long ic = 0; ic < C; ic++)
-        {
-            for (long ih = 0; ih < kernel_size; ih++)
-            {
-                for (long iw = 0; iw < kernel_size; iw++)
-                {
+        for (long ic = 0; ic < C; ic++) {
+            for (long ih = 0; ih < kernel_size; ih++) {
+                for (long iw = 0; iw < kernel_size; iw++) {
                     patches[in][ic][ih][iw] = map_pad[ic][h_start + ih][w_start + iw];
                 }
             }
@@ -79,8 +75,7 @@ __global__ void get_patches_cuda_kernel(
 
 torch::Tensor get_patches_cuda(const torch::Tensor &map,
                                torch::Tensor &points,
-                               int radius)
-{
+                               int radius) {
     CHECK_INPUT(map);
     CHECK_INPUT(points);
 
@@ -100,12 +95,13 @@ torch::Tensor get_patches_cuda(const torch::Tensor &map,
     // cuda kernel
     AT_DISPATCH_FLOATING_TYPES(map_pad.type(),
                                "get_patches_cuda",
-                               ([&]
-                                { get_patches_cuda_kernel<scalar_t><<<blocks, threads>>>(
-                                      map_pad.packed_accessor32<scalar_t, 3, torch::RestrictPtrTraits>(),
-                                      points.packed_accessor32<int64_t, 2, torch::RestrictPtrTraits>(),
-                                      patches.packed_accessor32<scalar_t, 4, torch::RestrictPtrTraits>(),
-                                      radius); }));
+                               ([&] {
+                                   get_patches_cuda_kernel<scalar_t><<<blocks, threads>>>(
+                                           map_pad.packed_accessor32<scalar_t, 3, torch::RestrictPtrTraits>(),
+                                           points.packed_accessor32<int64_t, 2, torch::RestrictPtrTraits>(),
+                                           patches.packed_accessor32<scalar_t, 4, torch::RestrictPtrTraits>(),
+                                           radius);
+                               }));
 
     // get error
     cudaDeviceSynchronize();

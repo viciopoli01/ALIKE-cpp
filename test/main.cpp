@@ -34,11 +34,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <torch/torch.h>
 #include <opencv2/opencv.hpp>
 
-#include <args.hxx>
-#include <image_loader.hpp>
-#include <alike.hpp>
-#include <simple_tracker.hpp>
-#include <utils.h>
+#include <ALIKE_cpp/args.hxx>
+#include <ALIKE_cpp/image_loader.hpp>
+#include <ALIKE_cpp/alike.hpp>
+#include <ALIKE_cpp/simple_tracker.hpp>
+#include <ALIKE_cpp/utils.hpp>
 #include <iostream>
 #include <sstream>
 
