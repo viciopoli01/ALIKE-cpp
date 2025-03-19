@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
 project(ALIKE_test LANGUAGES CXX CUDA)
 
-# Set the C++ standard to C++14
-set(CMAKE_CXX_STANDARD 14)
+# Set the C++ standard to C++17
+set(CMAKE_CXX_STANDARD 17)
 
 # Set the build type to Release
 set(CMAKE_BUILD_TYPE "Release")
 
-# Find the ALIKE_cpp package
+# Find the ALIKE-cpp package
 find_package(ALIKE_cpp REQUIRED)
 
 # Optional: Build demo executable
