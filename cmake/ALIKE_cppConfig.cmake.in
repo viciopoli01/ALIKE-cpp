@@ -1,8 +1,0 @@
-@PACKAGE_INIT@
-
-include(CMakeFindDependencyMacro)
-
-find_package(Torch REQUIRED PATHS ${CMAKE_CURRENT_LIST_DIR}/libtorch)
-find_dependency(OpenCV REQUIRED)
-
-include("${CMAKE_CURRENT_LIST_DIR}/ALIKE_cppTargets.cmake")
